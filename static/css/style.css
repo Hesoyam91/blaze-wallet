@@ -1,0 +1,105 @@
+/* Archivo CSS básico */
+
+/* Estilos para el cuerpo de la página */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+  }
+  
+  /* Estilos para el encabezado */
+  header {
+    background-color: #333;
+    color: #fff;
+    padding: 20px;
+  }
+  
+  /* Estilos para el contenido principal */
+  .main-content {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  /* Estilos para el pie de página */
+  footer {
+    background-color: #333;
+    color: #fff;
+    padding: 20px;
+    text-align: center;
+  }
+  
+  /* Estilos para los enlaces */
+  a {
+    color: #007bff;
+    text-decoration: none;
+  }
+  
+  a:hover {
+    text-decoration: underline;
+  }
+  
+  .logo {
+    max-width: 150x; /* Ajusta el tamaño máximo según tus necesidades */
+    height: 150px; /* Mantén la proporción de la imagen */
+  }
+  
+  .navbar {
+    background: linear-gradient(to right, #333333, #646464);
+  }
+
+  .footer {
+    background: linear-gradient(to right, #333333, #999999);
+  }
+  
+  
+  .btn-gradient {
+    background: linear-gradient(to right, #ffc2f2, #FF0000);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    text-decoration: none;
+  }
+  
+  .btn-rounded {
+    border-radius: 25px; /* Ajusta el valor según tus preferencias */
+  }
+  
+  #login-body {
+    position: relative;
+    min-height: 100vh;
+    overflow: hidden;
+  }
+  
+  #login-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('../img/blazewallet.png');
+    background-size: cover;
+    background-position: center;
+    filter: blur(5px); /* Agrega el efecto de desenfoque */
+    z-index: -1; /* Coloca el fondo detrás del contenido */
+  }
+  
+  .container.login-container {
+    position: relative;
+    z-index: 1; /* Asegura que el contenido del inicio de sesión esté en el frente */
+  }
+  
+  .card {
+    background: linear-gradient(to right, #333333, #999999);
+  }
+
+  .card-header {
+    color: white;
+  }
+  
+  .form-group label,
+  .form-group input {
+    color: white;
+  }  
+  
