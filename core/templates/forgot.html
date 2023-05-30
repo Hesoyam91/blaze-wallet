@@ -1,13 +1,7 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BlazeWallet - Restablecer contraseña</title>
-  {% load static %}
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-  <link rel="stylesheet" href="{% static 'css/style.css' %}">
-</head>
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
 <body id="forgot-body">
     <div id="forgot-background"></div>
     <div class="container mt-5 forgot-container">
@@ -34,4 +28,4 @@
       </div>
     </div>
 </body>
-</html>
+{% endblock %}
