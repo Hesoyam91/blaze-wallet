@@ -13,4 +13,5 @@ urlpatterns = [
     path('logout/', authViews.LogoutView.as_view(template_name='logout.html'), name='logout'),
     path('register/', VistaRegistro.as_view(), name='register'),
     path('forgot/', views.forgot, name="forgot"),
+    path('contacto/', views.contacto, name="contacto"),
     ]

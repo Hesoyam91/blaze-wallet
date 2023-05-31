@@ -22,6 +22,12 @@ def forgot(request):
 def logout(request):
     return render(request, "logout.html")
 
+def nosotros(request):
+    return render(request, "nosotros.html")
+
+def contacto(request):
+    return render(request, "contacto.html")
+
 class VistaRegistro(View):
     form_class = FormRegistro
     initial = {'key': 'value'}
