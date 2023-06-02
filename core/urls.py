@@ -14,4 +14,5 @@ urlpatterns = [
     path('register/', VistaRegistro.as_view(), name='register'),
     path('forgot/', views.forgot, name="forgot"),
     path('contacto/', views.contacto, name="contacto"),
+    path('transbank', views.transbank, name="transbank",)
     ]
