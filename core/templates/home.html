@@ -23,9 +23,6 @@
       <li class="nav-item">
         <a class="nav-link" href="{% url 'contacto' %}">Contacto</a>
       </li>
-      <li class="nav-item">
-        <a class="nav-link" href="{% url 'transbank' %}">CTransbank</a>
-      </li>
     </ul>
     <ul class="navbar-nav ml-auto">
       {% if user.is_authenticated %}
@@ -48,6 +45,17 @@
   </button>
 </div>
 {% endif %}
+
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    const closeButton = document.querySelector(".alert button.close");
+    const alertMessage = document.querySelector(".alert");
+    
+    closeButton.addEventListener("click", function() {
+      alertMessage.style.display = "none";
+    });
+  });
+  </script>
 
 
 <!-- Carrusel -->
