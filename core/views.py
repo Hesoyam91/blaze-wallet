@@ -95,23 +95,27 @@ def transferencia_saldo(request):
             username_destino = form.cleaned_data['username_destino']
             monto_transferencia = form.cleaned_data['monto_transferencia']
             usuario_actual = request.user
-            perfil_usuario_actual = PerfilUsuario.objects.get(usuario=usuario_actual)
-            perfil_usuario_destino = get_object_or_404(PerfilUsuario, usuario__username=username_destino)
-            
-            if usuario_actual != perfil_usuario_destino.usuario:
-                if perfil_usuario_actual.saldo >= monto_transferencia:
-                    perfil_usuario_actual.saldo -= monto_transferencia
-                    perfil_usuario_destino.saldo += monto_transferencia
-                    perfil_usuario_actual.save()
-                    perfil_usuario_destino.save()
-                    
-                    messages.success(request, f'Saldo transferido exitosamente a {username_destino}.')
-                    return redirect('transferencia_exitosa')
+            try:
+                perfil_usuario_actual = PerfilUsuario.objects.get(usuario=usuario_actual)
+                perfil_usuario_destino = PerfilUsuario.objects.get(usuario__username=username_destino)
+                
+                if usuario_actual != perfil_usuario_destino.usuario:
+                    if perfil_usuario_actual.saldo >= monto_transferencia:
+                        perfil_usuario_actual.saldo -= monto_transferencia
+                        perfil_usuario_destino.saldo += monto_transferencia
+                        perfil_usuario_actual.save()
+                        perfil_usuario_destino.save()
+                        
+                        messages.success(request, f'Saldo transferido exitosamente a {username_destino}.')
+                        return redirect('transferencia_exitosa')
+                    else:
+                        messages.error(request, 'Saldo insuficiente para realizar la transferencia.')
                 else:
-                    messages.error(request, 'Saldo insuficiente para realizar la transferencia.')
-            else:
-                messages.error(request, 'No puedes transferir saldo a ti mismo.')
-    
+                    messages.error(request, 'No puedes transferir saldo a ti mismo.')
+            except PerfilUsuario.DoesNotExist:
+                messages.error(request, 'El perfil de usuario no existe.')
+        else:
+            messages.error(request, 'Formulario inválido. Verifica los datos ingresados.')
     else:
         form = TransferenciaSaldoForm()
     
