@@ -4,7 +4,7 @@ from django.views import View
 from .forms import FormRegistro, FormLogin, TransferenciaSaldoForm
 from django.contrib.auth.views import LoginView
 from django.contrib.auth.decorators import login_required
-from .models import PerfilUsuario
+from .models import PerfilUsuario, Transferencia
 from django.contrib.auth.models import User
 
 # Create your views here.
@@ -87,7 +87,6 @@ class CustomVistaLogin(LoginView):
         return super(CustomVistaLogin, self).form_valid(form)
 
 
-@login_required
 def transferencia_saldo(request):
     form = TransferenciaSaldoForm()
     error = None  # Valor predeterminado para error
@@ -101,14 +100,21 @@ def transferencia_saldo(request):
             try:
                 perfil_usuario_actual = PerfilUsuario.objects.get(usuario=usuario_actual)
                 perfil_usuario_destino = PerfilUsuario.objects.get(usuario__username=username_destino)
-                
+
                 if usuario_actual != perfil_usuario_destino.usuario:
                     if perfil_usuario_actual.saldo >= monto_transferencia:
                         perfil_usuario_actual.saldo -= monto_transferencia
                         perfil_usuario_destino.saldo += monto_transferencia
                         perfil_usuario_actual.save()
                         perfil_usuario_destino.save()
-                        
+
+                        # Registrar la transferencia
+                        transferencia = Transferencia.objects.create(
+                            destinatario=perfil_usuario_destino,
+                            remitente=perfil_usuario_actual,
+                            monto=monto_transferencia
+                        )
+
                         messages.success(request, f'Saldo transferido exitosamente a {username_destino}.')
                         return redirect('transferencia_exitosa')
                     else:
@@ -119,7 +125,7 @@ def transferencia_saldo(request):
                 messages.error(request, 'El perfil de usuario no existe.')
         else:
             messages.error(request, 'Formulario inválido. Verifica los datos ingresados.')
-    
+
     usuario_actual = request.user
     try:
         perfil_usuario_actual = PerfilUsuario.objects.get(usuario=usuario_actual)
@@ -129,3 +135,16 @@ def transferencia_saldo(request):
         error = "No existe un perfil de usuario asociado a este usuario"
 
     return render(request, 'transferencia.html', {'form': form, 'saldo_actual': saldo_actual, 'error': error})
+
+def cuenta(request):
+    usuario_actual = request.user
+
+    try:
+        perfil_usuario_actual = PerfilUsuario.objects.get(usuario=usuario_actual)
+        saldo_actual = perfil_usuario_actual.saldo
+        transferencias = Transferencia.objects.filter(remitente=perfil_usuario_actual).order_by('-fecha')[:5]
+    except PerfilUsuario.DoesNotExist:
+        saldo_actual = 0
+        transferencias = []
+
+    return render(request, 'cuenta.html', {'saldo_actual': saldo_actual, 'transferencias': transferencias})

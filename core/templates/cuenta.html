@@ -1,14 +1,7 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mi Cuenta - BlazeWallet</title>
-  {% load static %}
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-  <link rel="stylesheet" href="{% static 'css/style.css' %}">
-</head>
-<body>
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
   <!-- Navbar -->
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <a class="navbar-brand" href="#">
@@ -49,7 +42,7 @@
         <div class="card">
           <div class="card-header">Saldo de la Tarjeta</div>
           <div class="card-body">
-            <p><strong>Saldo disponible:</strong> $500.00</p>
+            <p><strong>Saldo disponible:</strong> {{ saldo_actual }}</p>
           </div>
         </div>
       </div>
@@ -63,20 +56,25 @@
               <thead>
                 <tr>
                   <th>Fecha</th>
-                  <th>Descripción</th>
+                  <th>Destinatario</th>
                   <th>Monto</th>
                 </tr>
               </thead>
               <tbody>
+                {% for transferencia in transferencias %}
                 <tr>
-                  <td>01/05/2023</td>
-                  <td>Compra en tienda</td>
-                  <td>$50.00</td>
+                  <td>{{ transferencia.fecha }}</td>
+                  <td>{{ transferencia.destinatario }}</td>
+                  <td>{{ transferencia.monto }}</td>
                 </tr>
-                <tr>
-                  <td>05/05/2023</td>
-                  <td>Retiro de efectivo</td>
-                  <td>$100.00</td>
-                </tr>
-                <tr>
-                  <td>10/05/2023</
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <br>
+{% endblock %}
+
