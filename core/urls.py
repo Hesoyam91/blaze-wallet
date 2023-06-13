@@ -4,7 +4,7 @@ from core import views
 from core.views import VistaRegistro, CustomVistaLogin
 from core.forms import FormLogin
 from django.contrib.auth import views as authViews
-from .views import transferencia_saldo
+from .views import transferencia
 
 
 urlpatterns = [
@@ -17,6 +17,6 @@ urlpatterns = [
     path('forgot/', views.forgot, name="forgot"),
     path('contacto/', views.contacto, name="contacto"),
     path('cuenta/', views.cuenta, name="cuenta"),
-    path('transferencia/', transferencia_saldo, name='transferencia_saldo'),
+    path('transferencia/', views.transferencia, name='transferencia'),
     path('transferencia_exitosa/', views.transferencia_exitosa, name='transferencia_exitosa'),
     ]
