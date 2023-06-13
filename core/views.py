@@ -5,6 +5,7 @@ from .forms import FormRegistro, FormLogin, TransferenciaSaldoForm
 from django.contrib.auth.views import LoginView
 from django.contrib.auth.decorators import login_required
 from .models import PerfilUsuario
+from django.contrib.auth.models import User
 
 # Create your views here.
 def home(request):
@@ -68,7 +69,6 @@ class VistaRegistro(View):
             return redirect(to='/')
         
         return super(VistaRegistro, self).dispatch(request, *args, **kwargs)
-
     
 class CustomVistaLogin(LoginView):
     form_class = FormLogin
@@ -85,7 +85,8 @@ class CustomVistaLogin(LoginView):
 
         # else browser session will be as long as the session cookie time "SESSION_COOKIE_AGE" defined in settings.py
         return super(CustomVistaLogin, self).form_valid(form)
-    
+
+
 @login_required
 def transferencia_saldo(request):
     if request.method == 'POST':
