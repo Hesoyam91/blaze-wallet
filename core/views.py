@@ -89,7 +89,7 @@ class CustomVistaLogin(LoginView):
 
 def transferencia_saldo(request):
     form = TransferenciaSaldoForm()
-    error = None  # Valor predeterminado para error
+    error = None
 
     if request.method == 'POST':
         form = TransferenciaSaldoForm(request.POST)
@@ -97,32 +97,36 @@ def transferencia_saldo(request):
             username_destino = form.cleaned_data['username_destino']
             monto_transferencia = form.cleaned_data['monto_transferencia']
             usuario_actual = request.user
-            try:
-                perfil_usuario_actual = PerfilUsuario.objects.get(usuario=usuario_actual)
-                perfil_usuario_destino = PerfilUsuario.objects.get(usuario__username=username_destino)
 
-                if usuario_actual != perfil_usuario_destino.usuario:
-                    if perfil_usuario_actual.saldo >= monto_transferencia:
-                        perfil_usuario_actual.saldo -= monto_transferencia
-                        perfil_usuario_destino.saldo += monto_transferencia
-                        perfil_usuario_actual.save()
-                        perfil_usuario_destino.save()
+            if monto_transferencia > 0:  # Verificar que el monto sea mayor que cero
+                try:
+                    perfil_usuario_actual = PerfilUsuario.objects.get(usuario=usuario_actual)
+                    perfil_usuario_destino = PerfilUsuario.objects.get(usuario__username=username_destino)
 
-                        # Registrar la transferencia
-                        transferencia = Transferencia.objects.create(
-                            destinatario=perfil_usuario_destino,
-                            remitente=perfil_usuario_actual,
-                            monto=monto_transferencia
-                        )
+                    if usuario_actual != perfil_usuario_destino.usuario:
+                        if perfil_usuario_actual.saldo >= monto_transferencia:
+                            perfil_usuario_actual.saldo -= monto_transferencia
+                            perfil_usuario_destino.saldo += monto_transferencia
+                            perfil_usuario_actual.save()
+                            perfil_usuario_destino.save()
 
-                        messages.success(request, f'Saldo transferido exitosamente a {username_destino}.')
-                        return redirect('transferencia_exitosa')
+                            # Registrar la transferencia
+                            transferencia = Transferencia.objects.create(
+                                destinatario=perfil_usuario_destino,
+                                remitente=perfil_usuario_actual,
+                                monto=monto_transferencia
+                            )
+
+                            messages.success(request, f'Saldo transferido exitosamente a {username_destino}.')
+                            return redirect('transferencia_exitosa')
+                        else:
+                            messages.error(request, 'Saldo insuficiente para realizar la transferencia.')
                     else:
-                        messages.error(request, 'Saldo insuficiente para realizar la transferencia.')
-                else:
-                    messages.error(request, 'No puedes transferir saldo a ti mismo.')
-            except PerfilUsuario.DoesNotExist:
-                messages.error(request, 'El perfil de usuario no existe.')
+                        messages.error(request, 'No puedes transferir saldo a ti mismo.')
+                except PerfilUsuario.DoesNotExist:
+                    messages.error(request, 'El perfil de usuario no existe.')
+            else:
+                messages.error(request, 'El monto de transferencia debe ser mayor que cero.')
         else:
             messages.error(request, 'Formulario inválido. Verifica los datos ingresados.')
 
