@@ -7,6 +7,8 @@
     <p class="error">{{ error }}</p>
 {% endif %}
 
+<p>Sueldo actual: {{ saldo_actual }}</p>
+
 <form method="post">
     {% csrf_token %}
     <label for="username_destino">Usuario destino:</label>

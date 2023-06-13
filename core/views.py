@@ -89,6 +89,9 @@ class CustomVistaLogin(LoginView):
 
 @login_required
 def transferencia_saldo(request):
+    form = TransferenciaSaldoForm()
+    error = None  # Valor predeterminado para error
+
     if request.method == 'POST':
         form = TransferenciaSaldoForm(request.POST)
         if form.is_valid():
@@ -116,7 +119,13 @@ def transferencia_saldo(request):
                 messages.error(request, 'El perfil de usuario no existe.')
         else:
             messages.error(request, 'Formulario inválido. Verifica los datos ingresados.')
-    else:
-        form = TransferenciaSaldoForm()
     
-    return render(request, 'transferencia.html', {'form': form})
+    usuario_actual = request.user
+    try:
+        perfil_usuario_actual = PerfilUsuario.objects.get(usuario=usuario_actual)
+        saldo_actual = perfil_usuario_actual.saldo
+    except PerfilUsuario.DoesNotExist:
+        saldo_actual = 0
+        error = "No existe un perfil de usuario asociado a este usuario"
+
+    return render(request, 'transferencia.html', {'form': form, 'saldo_actual': saldo_actual, 'error': error})
