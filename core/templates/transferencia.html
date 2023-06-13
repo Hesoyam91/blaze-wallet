@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<h1>Transferencia de Saldo</h1>
+
+{% if error %}
+    <p class="error">{{ error }}</p>
+{% endif %}
+
+<form method="post">
+    {% csrf_token %}
+    <label for="username_destino">Usuario destino:</label>
+    <input type="text" name="username_destino" required><br>
+    <label for="monto_transferencia">Monto a transferir:</label>
+    <input type="number" step="0.01" name="monto_transferencia" required><br>
+    <input type="submit" value="Transferir">
+</form>
+
+{% if messages %}
+<div class="alert alert-danger">
+  <ul>
+    {% for message in messages %}
+    <li>{{ message }}</li>
+    {% endfor %}
+  </ul>
+</div>
+{% endif %}
+
+{% endblock %}

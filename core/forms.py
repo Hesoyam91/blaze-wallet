@@ -52,3 +52,8 @@ class FormLogin(AuthenticationForm):
     class Meta:
         model = User
         fields = ['username', 'password', 'remember_me']
+
+
+class TransferenciaSaldoForm(forms.Form):
+    username_destino = forms.CharField(max_length=150)
+    monto_transferencia = forms.DecimalField(max_digits=10, decimal_places=2)
