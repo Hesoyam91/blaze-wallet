@@ -24,9 +24,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-h_mmq)awge88*q_@f0t48pbi@usa-1$_76__th-lti&v%v0hpo'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = ["'blaze-wallet.azurewebsites.net'"]
 
 
 # Application definition
@@ -131,3 +131,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 SESSION_COOKIE_AGE = 60 * 60 * 24 * 30 
 LOGIN_REDIRECT_URL = '/cuenta/'
 LOGIN_URL = 'login'
+
+# Set CSRF cookie to be secure (HTTPS only)
+CSRF_COOKIE_SECURE = True
+
+# Set SameSite attribute of CSRF cookie
+CSRF_COOKIE_SAMESITE = 'Lax'
