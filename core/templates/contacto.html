@@ -4,25 +4,25 @@
 {% block content %}
 
   <!-- Contenido de la página -->
-  <div class="container mt-5">
-    <h2 class="text-center">Contáctanos</h2>
+  <div class="container mt-5 my-5">
+    <h2 class="text-center"><strong>Contáctanos</strong></h2>
     <div class="row justify-content-center mt-5">
       <div class="col-md-6">
         <form action="#" method="POST">
           {% csrf_token %}
           <div class="form-group">
             <label for="name">Nombre</label>
-            <input type="text" class="form-control" id="name" name="name" required>
+            <input type="text" class="form-control" id="name" name="name" required placeholder="Nombre">
           </div>
           <div class="form-group">
             <label for="email">Correo electrónico</label>
-            <input type="email" class="form-control" id="email" name="email" required>
+            <input type="email" class="form-control" id="email" name="email" required placeholder="E-mail">
           </div>
           <div class="form-group">
             <label for="message">Mensaje</label>
-            <textarea class="form-control" id="message" name="message" rows="5" required></textarea>
+            <textarea class="form-control" id="message" name="message" rows="5" required placeholder="Mensaje..."></textarea>
           </div>
-          <button type="submit" class="btn btn-primary btn-block">Enviar</button>
+          <button type="submit" class="btn btn-gradient btn-rounded btn-block mt-5">Enviar</button>
         </form>
       </div>
     </div>
