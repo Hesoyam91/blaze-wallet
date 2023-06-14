@@ -133,7 +133,7 @@ LOGIN_REDIRECT_URL = '/cuenta/'
 LOGIN_URL = 'login'
 
 # Set CSRF cookie to be secure (HTTPS only)
-CSRF_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = False
 
 # Set SameSite attribute of CSRF cookie
 CSRF_COOKIE_SAMESITE = 'Lax'
