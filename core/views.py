@@ -32,9 +32,6 @@ def contacto(request):
 def cuenta(request):
     return render(request, "cuenta.html")
 
-def transferencia_exitosa(request):
-    return render(request, 'transferencia_exitosa.html')
-
 def transferencia(request):
     return render(request, 'transferencia.html')
 

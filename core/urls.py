@@ -18,5 +18,4 @@ urlpatterns = [
     path('contacto/', views.contacto, name="contacto"),
     path('cuenta/', views.cuenta, name="cuenta"),
     path('transferencia/', transferencia_saldo, name='transferencia_saldo'),
-    path('transferencia_exitosa/', views.transferencia_exitosa, name='transferencia_exitosa'),
     ]

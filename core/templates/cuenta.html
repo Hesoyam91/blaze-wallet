@@ -11,7 +11,7 @@
         <div class="card">
           <div class="card-header">Saldo de la Tarjeta</div>
           <div class="card-body">
-            <p><strong>Saldo disponible:</strong> {{ saldo_actual }}</p>
+            <p><strong>Saldo disponible:</strong> ${{ saldo_actual }}</p>
           </div>
         </div>
       </div>
@@ -34,7 +34,7 @@
                 <tr>
                   <td>{{ transferencia.fecha }}</td>
                   <td>{{ transferencia.destinatario }}</td>
-                  <td>{{ transferencia.monto }}</td>
+                  <td>${{ transferencia.monto }}</td>
                 </tr>
                 {% endfor %}
               </tbody>
