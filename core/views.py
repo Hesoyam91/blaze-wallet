@@ -86,7 +86,7 @@ class CustomVistaLogin(LoginView):
         # else browser session will be as long as the session cookie time "SESSION_COOKIE_AGE" defined in settings.py
         return super(CustomVistaLogin, self).form_valid(form)
 
-
+@login_required(login_url='/login/')
 def transferencia_saldo(request):
     form = TransferenciaSaldoForm()
     error = None
@@ -118,7 +118,7 @@ def transferencia_saldo(request):
                             )
 
                             messages.success(request, f'Saldo transferido exitosamente a {username_destino}.')
-                            return redirect('transferencia_exitosa')
+                            return redirect('/')
                         else:
                             messages.error(request, 'Saldo insuficiente para realizar la transferencia.')
                     else:
@@ -140,6 +140,7 @@ def transferencia_saldo(request):
 
     return render(request, 'transferencia.html', {'form': form, 'saldo_actual': saldo_actual, 'error': error})
 
+@login_required(login_url='/login/')
 def cuenta(request):
     usuario_actual = request.user
 
