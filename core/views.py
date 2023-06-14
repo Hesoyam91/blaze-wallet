@@ -128,7 +128,7 @@ def transferencia_saldo(request):
             else:
                 messages.error(request, 'El monto de transferencia debe ser mayor que cero.')
         else:
-            messages.error(request, 'Formulario inválido. Verifica los datos ingresados.')
+            messages.error(request, 'Datos inválidos. Verifica los datos ingresados.')
 
     usuario_actual = request.user
     try:
@@ -136,7 +136,7 @@ def transferencia_saldo(request):
         saldo_actual = perfil_usuario_actual.saldo
     except PerfilUsuario.DoesNotExist:
         saldo_actual = 0
-        error = "No existe un perfil de usuario asociado a este usuario"
+        error = "No existe un perfil de usuario asociado a este usuario. Por favor, inicia sesión."
 
     return render(request, 'transferencia.html', {'form': form, 'saldo_actual': saldo_actual, 'error': error})
 
