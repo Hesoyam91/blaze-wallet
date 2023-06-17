@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-h_mmq)awge88*q_@f0t48pbi@usa-1$_76__th-lti&v%v0hpo
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['blaze-wallet.azurewebsites.net','127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['https://blaze-wallet.azurewebsites.net','127.0.0.1', 'localhost']
 
 
 # Application definition
@@ -139,4 +139,4 @@ CSRF_COOKIE_SECURE = False
 # Set SameSite attribute of CSRF cookie
 CSRF_COOKIE_SAMESITE = 'Lax'
 
-CSRF_TRUSTED_ORIGINS = ['blaze-wallet.azurewebsites.net','127.0.0.1', 'localhost']
+CSRF_TRUSTED_ORIGINS = ['https://blaze-wallet.azurewebsites.net','127.0.0.1', 'localhost']
