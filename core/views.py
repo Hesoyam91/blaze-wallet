@@ -55,7 +55,7 @@ class VistaRegistro(View):
             perfil_usuario.save()
 
             username = form.cleaned_data.get('username')
-            messages.success(request, f'Cuenta creada exitosamente. Bienvenido/a {username}.')
+            messages.success(request, f'Cuenta creada exitosamente. Ya puedes ingresar a tu cuenta, {username}.')
 
             return redirect(to='/')
 
@@ -107,7 +107,7 @@ def transferencia_saldo(request):
                             perfil_usuario_actual.save()
                             perfil_usuario_destino.save()
 
-                            # Registrar la transferencia
+                            # Registrar la transferencia enviada
                             transferencia = Transferencia.objects.create(
                                 destinatario=perfil_usuario_destino,
                                 remitente=perfil_usuario_actual,
@@ -137,6 +137,9 @@ def transferencia_saldo(request):
 
     return render(request, 'transferencia.html', {'form': form, 'saldo_actual': saldo_actual, 'error': error})
 
+
+
+
 @login_required(login_url='/login/')
 def cuenta(request):
     usuario_actual = request.user
@@ -144,9 +147,11 @@ def cuenta(request):
     try:
         perfil_usuario_actual = PerfilUsuario.objects.get(usuario=usuario_actual)
         saldo_actual = perfil_usuario_actual.saldo
-        transferencias = Transferencia.objects.filter(remitente=perfil_usuario_actual).order_by('-fecha')[:5]
+        transferencias_enviadas = Transferencia.objects.filter(remitente=perfil_usuario_actual).order_by('-fecha')[:5]
+        transferencias_recibidas = Transferencia.objects.filter(destinatario=perfil_usuario_actual).order_by('-fecha')[:5]
     except PerfilUsuario.DoesNotExist:
         saldo_actual = 0
-        transferencias = []
+        transferencias_enviadas = []
+        transferencias_recibidas = []
 
-    return render(request, 'cuenta.html', {'saldo_actual': saldo_actual, 'transferencias': transferencias})
+    return render(request, 'cuenta.html', {'saldo_actual': saldo_actual, 'transferencias_enviadas': transferencias_enviadas, 'transferencias_recibidas': transferencias_recibidas})

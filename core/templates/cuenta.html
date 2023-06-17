@@ -3,37 +3,66 @@
 
 {% block content %}
 
-  <!-- Contenido de la página -->
-  <div class="container mt-5">
-    <h2 class="text-center"><strong>Mi Cuenta</strong></h2>
-    <div class="row justify-content-center mt-5">
-      <div class="col-md-6">
-        <div class="card">
-          <div class="card-header">Saldo de la Tarjeta</div>
-          <div class="card-body">
-            <p><strong>Saldo disponible:</strong> ${{ saldo_actual }}</p>
-          </div>
+<!-- Contenido de la página -->
+<div class="container mt-5">
+
+  <h2 class="text-center"><strong>Mi Cuenta</strong></h2>
+  <div class="row justify-content-center mt-5">
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header">Saldo de la Tarjeta</div>
+        <div class="card-body">
+          <p><strong>Saldo disponible:</strong> ${{ saldo_actual }}</p>
         </div>
       </div>
     </div>
-    <div class="row justify-content-center mt-5">
-      <div class="col-md-8">
+  </div>
+
+  <div class="row justify-content-center mt-5">
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header">Transacciones Enviadas</div>
+        <div class="card-body">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Destinatario</th>
+                <th>Monto</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for transferencia in transferencias_enviadas %}
+              <tr>
+                <td>{{ transferencia.fecha }}</td>
+                <td>{{ transferencia.destinatario }}</td>
+                <td>${{ transferencia.monto }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="row justify-content-center">
+      <div class="col-md-12">
         <div class="card">
-          <div class="card-header">Transacciones</div>
+          <div class="card-header">Transacciones Recibidas</div>
           <div class="card-body">
             <table class="table">
               <thead>
                 <tr>
                   <th>Fecha</th>
-                  <th>Destinatario</th>
+                  <th>Remitente</th>
                   <th>Monto</th>
                 </tr>
               </thead>
               <tbody>
-                {% for transferencia in transferencias %}
+                {% for transferencia in transferencias_recibidas %}
                 <tr>
                   <td>{{ transferencia.fecha }}</td>
-                  <td>{{ transferencia.destinatario }}</td>
+                  <td>{{ transferencia.remitente }}</td>
                   <td>${{ transferencia.monto }}</td>
                 </tr>
                 {% endfor %}
@@ -44,11 +73,14 @@
       </div>
     </div>
   </div>
-  <br>
-  <style>
-    th, td, p{
-      color: white;
-    }
-  </style>
-{% endblock %}
+</div>
 
+<br>
+<style>
+  th,
+  td,
+  p {
+    color: white;
+  }
+</style>
+{% endblock %}
