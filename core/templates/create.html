@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<form method="post" action="{{ response.url }}">
+    {% csrf_token %}
+    <p>Monto: {{ request.amount }}</p>
+    <input type="hidden" name="token_ws" value="{{ response.token }}" />
+    <input type="submit" value="Ir a pagar" />
+</form>
+
+{% endblock %}

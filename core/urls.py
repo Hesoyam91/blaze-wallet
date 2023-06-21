@@ -18,4 +18,10 @@ urlpatterns = [
     path('contacto/', views.contacto, name="contacto"),
     path('cuenta/', views.cuenta, name="cuenta"),
     path('transferencia/', transferencia_saldo, name='transferencia_saldo'),
+    path('return/', views.returnn, name="return"),
+    path('final/', views.final, name="final"),
+    path('transaccion/', views.transaccion, name="transaccion"),
+    path('recarga-saldo/', views.recarga_saldo, name='recarga_saldo'),
+    path('create/', views.confirma_recarga, name='create'),
+    path('cancel/', views.cancel, name='cancel'),
     ]
