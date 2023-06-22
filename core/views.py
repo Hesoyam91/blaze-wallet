@@ -1,4 +1,3 @@
-
 from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
@@ -21,7 +20,6 @@ def recarga_saldo(request):
     session_id = str(random.randrange(10000000, 99999999))
     amount = int(request.POST.get('amount'))
     return_url = request.build_absolute_uri(reverse('return'))
-    cancel_url = request.build_absolute_uri(reverse('cancel'))
     tx = Transaction(WebpayOptions(IntegrationCommerceCodes.WEBPAY_PLUS, IntegrationApiKeys.WEBPAY, IntegrationType.TEST))
 
     if amount >= 1000 and amount <= 9999999999:
@@ -30,7 +28,6 @@ def recarga_saldo(request):
             "session_id": session_id,
             "amount": amount,
             "return_url": return_url,
-            "cancel_url": cancel_url
         }
         response = tx.create(buy_order, session_id, amount, return_url)
 
@@ -44,45 +41,33 @@ def recarga_saldo(request):
 
         request.session['create_request'] = create_request
         request.session['response'] = response
-        token = request.session['response']['token']
+        request.session['amount'] = amount
 
-        status = tx.status
-
-        if status == '1':
-            if tx.commit(token):
-                messages.success(request, 'La transacción se ha completado correctamente.')
-                transaccion.save()
-                perfil_usuario_actual.saldo += amount  
-                perfil_usuario_actual.save()  
-            else:
-                messages.error(request, 'La transacción no se ha podido completar.')
-                return render(request, 'transaccion.html')
-        elif status == '2':
-            messages.info(request, 'La transacción está pendiente de autorización.')
+        if tx.status:
+            messages.success(request, 'La transacción se ha completado correctamente.')
+            transaccion.save()          
+            return redirect('create')
+        else:
+            messages.error(request, 'La transacción no se ha podido completar.')
             return render(request, 'transaccion.html')
-        elif status == '3':
-            messages.error(request, 'La transacción fue rechazada.')
-            return render(request, 'transaccion.html')
-        elif status == '4':
-            messages.error(request, 'La transacción fue cancelada.')
-            return render(request, 'transaccion.html')
-
-        return redirect('create')
+        
     else:
-        messages.error(request, 'El monto debe estar en el rango de 1000 a 9999999999.')
+        messages.error(request, 'El monto no está dentro del rango permitido.')
         return render(request, 'transaccion.html')
 
 def confirma_recarga(request):
+    amount = request.session.get('amount')
     create_request = request.session.get('create_request')
     response = request.session.get('response')
-    
+    perfil_usuario_actual = PerfilUsuario.objects.get(usuario=request.user)
+
+    perfil_usuario_actual.saldo += amount  
+    perfil_usuario_actual.save()
+ 
     return render(request, 'create.html', {'request': create_request, 'response': response})
 
-
 # Create your views here.
-def cancel(request):
-    return render(request, "cancel.html")
-
+@login_required(login_url='/login/')
 def transaccion(request):
     return render(request, "transaccion.html")
 
@@ -220,9 +205,6 @@ def transferencia_saldo(request):
         error = "No existe un perfil de usuario asociado a este usuario. Por favor, inicia sesión."
 
     return render(request, 'transferencia.html', {'form': form, 'saldo_actual': saldo_actual, 'error': error})
-
-
-
 
 @login_required(login_url='/login/')
 def cuenta(request):

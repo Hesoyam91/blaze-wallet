@@ -2,11 +2,24 @@
 {% load static %}
 
 {% block content %}
-<form method="post" action="{{ response.url }}">
-    {% csrf_token %}
-    <p>Monto: {{ request.amount }}</p>
-    <input type="hidden" name="token_ws" value="{{ response.token }}" />
-    <input type="submit" value="Ir a pagar" />
-</form>
+<div class="container my-5">
+    <div class="align-items-center text-center">
 
+        <h2 class="text-center"><strong>Confirmar pago</strong></h2>
+
+
+        <div class="d-grid gap-2 col-6 mx-auto">
+
+            <form method="post" action="{{ response.url }}">
+                {% csrf_token %}
+                <h4 class="my-4"><strong>Monto: {{ request.amount }}</strong></h4>
+                <input type="hidden" name="token_ws" value="{{ response.token }}" />
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-gradient btn-rounded" value="Ir a pagar"
+                      style="width: 100%;">Ir a pagar</button>
+                  </div>
+            </form>
+        </div>
+    </div>
+</div>
 {% endblock %}

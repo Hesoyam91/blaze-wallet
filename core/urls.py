@@ -23,5 +23,4 @@ urlpatterns = [
     path('transaccion/', views.transaccion, name="transaccion"),
     path('recarga-saldo/', views.recarga_saldo, name='recarga_saldo'),
     path('create/', views.confirma_recarga, name='create'),
-    path('cancel/', views.cancel, name='cancel'),
     ]
