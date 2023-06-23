@@ -139,4 +139,4 @@ CSRF_COOKIE_SECURE = False
 # Set SameSite attribute of CSRF cookie
 CSRF_COOKIE_SAMESITE = 'Lax'
 
-CSRF_TRUSTED_ORIGINS = ['https://blaze-wallet.azurewebsites.net','127.0.0.1', 'localhost']
+CSRF_TRUSTED_ORIGINS = ['https://blaze-wallet.azurewebsites.net']
