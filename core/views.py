@@ -1,81 +1,88 @@
-from django.http import HttpResponse
-from django.shortcuts import render, redirect, get_object_or_404
+from itertools import chain
+from django.http import JsonResponse
+from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.views import View
+import requests
 from .forms import FormRegistro, FormLogin, TransferenciaSaldoForm
 from django.contrib.auth.views import LoginView
 from django.contrib.auth.decorators import login_required
-from .models import PerfilUsuario, Transferencia, Transaccion
-from django.contrib.auth.models import User
-from django.urls import reverse
-import random
-from transbank.common.integration_type import IntegrationType
-from transbank.common.options import WebpayOptions
-from transbank.webpay.webpay_plus.transaction import Transaction, IntegrationApiKeys, IntegrationCommerceCodes
+from .models import PerfilUsuario, Transferencia, Transaccion, TransferenciaBeatpay
+from django.conf import settings
+from django.template import RequestContext
 
 @login_required(login_url='/login/')
-def recarga_saldo(request):
-    perfil_usuario_actual = PerfilUsuario.objects.get(usuario=request.user)
-    buy_order = str(random.randrange(10000000, 99999999))
-    session_id = str(random.randrange(10000000, 99999999))
-    amount = int(request.POST.get('amount'))
-    return_url = request.build_absolute_uri(reverse('return'))
-    tx = Transaction(WebpayOptions(IntegrationCommerceCodes.WEBPAY_PLUS, IntegrationApiKeys.WEBPAY, IntegrationType.TEST))
+def beatpay(request):
+    response_data = None  # Valor predeterminado para response_data
 
-    if amount >= 1000 and amount <= 9999999999:
-        create_request = {
-            "buy_order": buy_order,
-            "session_id": session_id,
-            "amount": amount,
-            "return_url": return_url,
-        }
-        response = tx.create(buy_order, session_id, amount, return_url)
+    usuario = request.user
+    tarjeta_origen = PerfilUsuario.objects.get(usuario=usuario)
+    saldo = tarjeta_origen.saldo
 
-        transaccion = Transaccion(
-            perfil_usuario=perfil_usuario_actual,
-            buy_order=buy_order,
-            session_id=session_id,
-            amount=amount,
-            return_url=return_url
-        )
+    if request.method == 'POST':
+        # Obtener los datos del formulario
+        tarjeta_destino = request.POST.get('tarjeta_destino')
+        comentario = request.POST.get('comentario')
+        monto = request.POST.get('monto')
 
-        request.session['create_request'] = create_request
-        request.session['response'] = response
-        request.session['amount'] = amount
+        saldo = int(saldo)
+        monto = int(monto)
 
-        if tx.status:
-            messages.success(request, 'La transacción se ha completado correctamente.')
-            transaccion.save()          
-            return redirect('create')
-        else:
-            messages.error(request, 'La transacción no se ha podido completar.')
-            return render(request, 'transaccion.html')
-        
-    else:
-        messages.error(request, 'El monto no está dentro del rango permitido.')
-        return render(request, 'transaccion.html')
-
-def confirma_recarga(request):
-    amount = request.session.get('amount')
-    create_request = request.session.get('create_request')
-    response = request.session.get('response')
-    perfil_usuario_actual = PerfilUsuario.objects.get(usuario=request.user)
-
-    perfil_usuario_actual.saldo += amount  
-    perfil_usuario_actual.save()
  
-    return render(request, 'create.html', {'request': create_request, 'response': response})
+        if saldo >= monto:
+            codigo = 'DEMOTESTCORRECTO'
+            token = 'DEMOTESTCORRECTO'
+            if codigo == 'DEMOTESTCORRECTO' and token == 'DEMOTESTCORRECTO':
+                url = 'https://musicpro.bemtorres.win/api/v1/tarjeta/transferir'
+                data = {
+                    'tarjeta_origen': tarjeta_origen,
+                    'tarjeta_destino': tarjeta_destino,
+                    'comentario': comentario,
+                    'monto': monto,
+                    'codigo': codigo,
+                    'token': token
+                }
+                response = requests.post(url, data=data)
+                response_data = response.json()
+                print(response_data)  # Imprimir la respuesta en la consola del servidor
+                if 'status' in response_data['response'] and response_data['response']['status'] == 200:
+                    tarjeta_origen.saldo -= monto
+                    tarjeta_origen.save()
+                    # Registrar la transferencia enviada
+                    transferencia_beatpay = TransferenciaBeatpay.objects.create(
+                        destinatario=tarjeta_destino,
+                        remitente=tarjeta_origen,
+                        monto=monto,
+                        comentario=comentario
+                    )
 
-# Create your views here.
-@login_required(login_url='/login/')
-def transaccion(request):
-    return render(request, "transaccion.html")
+                    messages.success(request, f'Saldo transferido exitosamente a {tarjeta_destino}.')
+                    return redirect('/')
+                else:
+                    if 'message' in response_data['response']:
+                        messages.error(request, response_data['response']['message'])
+                    else:
+                        messages.error(request, 'Ocurrió un error en la transferencia.')
+                return render(request, 'beatpay.html', {'response_data': response_data})
+            else:
+                messages.error(request, 'Código o Token incorrecto.')
+        else:
+            messages.error(request, 'Saldo insuficiente para realizar la transferencia.')
 
+    return render(request, 'beatpay.html', {'response_data': response_data, 'tarjeta_origen': tarjeta_origen})
+
+
+
+
+
+def handler404(request, *args, **argv):
+    response = render('404.html', {},
+                                  context_instance=RequestContext(request))
+    response.status_code = 404
+    return response
+    
 def returnn(request):
     return render(request, "return.html")
-
-def final(request):
-    return render(request, "final.html")
 
 def home(request):
     return render(request, "home.html")
@@ -214,10 +221,16 @@ def cuenta(request):
         perfil_usuario_actual = PerfilUsuario.objects.get(usuario=usuario_actual)
         saldo_actual = perfil_usuario_actual.saldo
         transferencias_enviadas = Transferencia.objects.filter(remitente=perfil_usuario_actual).order_by('-fecha')[:5]
+        transferencias_enviadas_beatpay = TransferenciaBeatpay.objects.filter(remitente=perfil_usuario_actual).order_by('-fecha')[:5]
+        all_transferencias_enviadas = sorted(
+            chain(transferencias_enviadas, transferencias_enviadas_beatpay),
+            key=lambda transferencia: transferencia.fecha,
+            reverse=True
+        )[:5]
         transferencias_recibidas = Transferencia.objects.filter(destinatario=perfil_usuario_actual).order_by('-fecha')[:5]
     except PerfilUsuario.DoesNotExist:
         saldo_actual = 0
         transferencias_enviadas = []
         transferencias_recibidas = []
 
-    return render(request, 'cuenta.html', {'saldo_actual': saldo_actual, 'transferencias_enviadas': transferencias_enviadas, 'transferencias_recibidas': transferencias_recibidas})
+    return render(request, 'cuenta.html', {'saldo_actual': saldo_actual, 'transferencias_enviadas': all_transferencias_enviadas, 'transferencias_recibidas': transferencias_recibidas})

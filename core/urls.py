@@ -7,6 +7,7 @@ from django.contrib.auth import views as authViews
 from .views import transferencia_saldo
 
 
+
 urlpatterns = [
     path('', views.home, name="home"),
     path('nosotros/', views.nosotros, name="nosotros"),
@@ -18,9 +19,8 @@ urlpatterns = [
     path('contacto/', views.contacto, name="contacto"),
     path('cuenta/', views.cuenta, name="cuenta"),
     path('transferencia/', transferencia_saldo, name='transferencia_saldo'),
-    path('return/', views.returnn, name="return"),
-    path('final/', views.final, name="final"),
-    path('transaccion/', views.transaccion, name="transaccion"),
-    path('recarga-saldo/', views.recarga_saldo, name='recarga_saldo'),
-    path('create/', views.confirma_recarga, name='create'),
+    path('beatpay/', views.beatpay, name="beatpay"),
+    path('return/', views.returnn, name="return")
     ]
+
+handler404 = views.handler404

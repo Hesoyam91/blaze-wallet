@@ -109,7 +109,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'es'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'America/Santiago'
 
 USE_I18N = True
 
@@ -141,6 +141,8 @@ CSRF_COOKIE_SAMESITE = 'Lax'
 
 #CSRF_TRUSTED_ORIGINS = ['https://blaze-wallet.azurewebsites.net','127.0.0.1', 'localhost']
 
-TRANSBANK_API_KEY = '579B532A7440BB0C9079DED94D31EA1615BACEB56610332264630D42D0A36B1C'
-TRANSBANK_CODIGO_COMERCIO = '597055555532'
-TRANSBANK_URL_BASE = 'https://webpay3gint.transbank.cl/.'
+MESSAGE_STORAGE = 'django.contrib.messages.storage.session.SessionStorage'
+
+
+
+
