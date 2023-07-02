@@ -34,12 +34,17 @@
       <li class="nav-item {% if request.path == '/contacto/' %}active{% endif %}">
         <a class="nav-link" href="{% url 'contacto' %}">Contacto</a>
       </li>
-      <li class="nav-item {% if request.path == '/transferencia/' %}active{% endif %}">
+      {% if user.is_authenticated %}
+      <li class="nav-item {% if request.path == '/transferencia/' %}active{% endif %} highlight">
         <a class="nav-link" href="{% url 'transferencia_saldo' %}">Transferir</a>
       </li>
-      <li class="nav-item {% if request.path == '/cuenta/' %}active{% endif %}">
+      <li class="nav-item {% if request.path == '/beatpay/' %}active{% endif %} highlight">
+        <a class="nav-link" href="{% url 'beatpay' %}">Beatpay</a>
+      </li>
+      <li class="nav-item {% if request.path == '/cuenta/' %}active{% endif %} highlight">
         <a class="nav-link" href="{% url 'cuenta' %}">Cuenta</a>
       </li>
+      {% endif %}
     </ul>
     <ul class="navbar-nav ml-auto">
       {% if user.is_authenticated %}
@@ -68,12 +73,6 @@
       </li>
       <li class="nav-item">
         <a class="nav-link text-white" href="{% url 'contacto' %}">Contacto</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link text-white" href="{% url 'transferencia_saldo' %}">Transferir</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link text-white" href="{% url 'cuenta' %}">Cuenta</a>
       </li>
     </ul>
   </footer>
