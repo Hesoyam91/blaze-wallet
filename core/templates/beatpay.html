@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+{% if messages %}
+<div class="alert alert-danger mt-4 rounded col-6 mx-auto">
+  <ul>
+    {% for message in messages %}
+    <li>{{ message }}</li>
+    {% endfor %}
+  </ul>
+</div>
+{% endif %}
+
+<div class="container mt-5">
+  <div class="align-items-center text-center">
+    <h2 class="text-center"><strong>Transferencia Beatpay</strong></h2>
+  </div>
+
+
+  <div class="d-grid gap-2 col-6 mx-auto">
+
+    <form method="post" class="form-floating">
+      <br>
+      <p><strong>Saldo actual: ${{ tarjeta_origen.saldo }}</strong></p>
+
+      {% csrf_token %}
+      <div class="my-4">
+        <label for="tarjeta_destino" class="form-label"><strong>Tarjeta Destino:</strong></label>
+        <input type="text" class="form-control" id="tarjeta_destino" name="tarjeta_destino" required placeholder="Ingrese los números de la tarjeta destino">
+      </div>
+      <div class="my-4">
+        <label for="comentario" class="form-label"><strong>Comentario:</strong></label>
+        <input type="text" class="form-control" id="comentario" name="comentario" required placeholder="Ingrese el asunto o un comentario sobre la transferencia">
+      </div>
+      <div class="my-4">
+        <label for="monto" class="form-label"><strong>Monto:</strong></label>
+        <input type="number" class="form-control" id="monto" name="monto" required placeholder="Ingrese el monto">
+      </div>
+      <input type="hidden" id="tarjeta_origen" name="tarjeta_origen" value="{{ request.user.tarjeta_origen }}">
+      <input type="hidden" id="codigo" name="codigo" value="DEMOTESTCORRECTO">
+      <input type="hidden" id="token" name="token" value="DEMOTESTCORRECTO">
+      <div class="my-5">
+        <button type="submit" class="btn btn-gradient btn-rounded" style="width: 100%;">Enviar</button>
+      </div>
+    </form>
+  </div>
+
+</div>
+{% endblock %}

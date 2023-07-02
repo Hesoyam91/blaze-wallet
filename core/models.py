@@ -16,3 +16,24 @@ class Transferencia(models.Model):
 
     def __str__(self):
         return f"Transferencia de {self.remitente.usuario.username} a {self.destinatario.usuario.username}"
+    
+class Transaccion(models.Model):
+    perfil_usuario = models.ForeignKey(PerfilUsuario, on_delete=models.CASCADE)
+    buy_order = models.CharField(max_length=50)
+    session_id = models.CharField(max_length=50)
+    amount = models.IntegerField()
+    return_url = models.URLField()
+    fecha = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Transaccion de {self.perfil_usuario.usuario.username} - ID: {self.id}"
+
+class TransferenciaBeatpay(models.Model):
+    destinatario = models.CharField(max_length=255)
+    remitente = models.ForeignKey(PerfilUsuario, on_delete=models.CASCADE, related_name='transferencias_enviadas_beatpay')
+    monto = models.IntegerField()
+    comentario = models.TextField(blank=True)
+    fecha = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Transferencia Beatpay de {self.remitente.usuario.username} a {self.destinatario}"
