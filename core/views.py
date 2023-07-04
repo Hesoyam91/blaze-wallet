@@ -14,32 +14,48 @@ import stripe
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
+@login_required(login_url='/login/')
 def recharge(request):
     if request.method == 'POST':
         token = request.POST.get('stripeToken')
-        amount = float(request.POST.get('amount', 0))
-        if token and amount > 0:
+        amount_clp = request.POST.get('amount')
+        usuario = request.user
+        actual_user = PerfilUsuario.objects.get(usuario=usuario)
+
+        if token and int(amount_clp) >= 1000:
+            # Convertir el monto de CLP a USD
+            amount_usd = int(amount_clp) / 800
+
             try:
-                # Crear la transferencia en Stripe utilizando el monto ingresado por el usuario
+                # Crear la transferencia en Stripe utilizando el monto en USD
                 transfer = stripe.Charge.create(
-                    amount=int(amount * 100),  # Convertir el monto a centavos
-                    currency='usd',  # Utilizar la moneda deseada (puedes cambiarla según tus necesidades)
+                    amount=int(amount_usd * 100),  # Convertir el monto a centavos
+                    currency='usd',  # Utilizar la moneda deseada (USD)
                     source=token
                 )
+
+                actual_user.saldo += int(amount_clp)
+                actual_user.save()
                 # Proceso exitoso de transferencia
                 return render(request, 'success.html')
+                
+            
             except stripe.error.CardError as e:
                 error_message = e.error.message
                 return render(request, 'error.html', {'error_message': error_message})
+            
             except Exception as e:
                 # Otro tipo de error
                 error_message = str(e)
-                return render(request, 'error.html', {'error_message': error_message})
+                return redirect('recharge')
+
         else:
-            error_message = 'No se proporcionó un token de Stripe o el monto ingresado es inválido.'
-            return render(request, 'error.html', {'error_message': error_message})
+            messages.error(request, 'Monto es menor a $1000.')
+            return redirect('recharge')
+    
     else:
         return render(request, 'recharge.html')
+
 
 
 def success(request):
