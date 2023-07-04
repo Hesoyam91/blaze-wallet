@@ -12,15 +12,21 @@ from django.conf import settings
 from django.template import RequestContext
 import stripe
 
-
+stripe.api_key = settings.STRIPE_SECRET_KEY
 
 def recharge(request):
     if request.method == 'POST':
         token = request.POST.get('stripeToken')
-        if token:
-            # Aquí realizas el proceso de recarga exitoso
+        amount = float(request.POST.get('amount', 0))
+        if token and amount > 0:
             try:
-                # Proceso exitoso de recarga
+                # Crear la transferencia en Stripe utilizando el monto ingresado por el usuario
+                transfer = stripe.Charge.create(
+                    amount=int(amount * 100),  # Convertir el monto a centavos
+                    currency='usd',  # Utilizar la moneda deseada (puedes cambiarla según tus necesidades)
+                    source=token
+                )
+                # Proceso exitoso de transferencia
                 return render(request, 'success.html')
             except stripe.error.CardError as e:
                 error_message = e.error.message
@@ -30,13 +36,14 @@ def recharge(request):
                 error_message = str(e)
                 return render(request, 'error.html', {'error_message': error_message})
         else:
-            error_message = 'No se proporcionó un token de Stripe.'
+            error_message = 'No se proporcionó un token de Stripe o el monto ingresado es inválido.'
             return render(request, 'error.html', {'error_message': error_message})
     else:
         return render(request, 'recharge.html')
 
 
-
+def success(request):
+    return render(request, 'success.html')
 
 @login_required(login_url='/login/')
 def beatpay(request):

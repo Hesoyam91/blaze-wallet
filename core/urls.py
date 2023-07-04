@@ -22,6 +22,7 @@ urlpatterns = [
     path('beatpay/', views.beatpay, name="beatpay"),
     path('return/', views.returnn, name="return"),
     path('recharge/', views.recharge, name="recharge"),
+    path('success/', views.success, name="success"),
     ]
 
 handler404 = views.handler404

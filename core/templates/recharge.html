@@ -2,76 +2,68 @@
 {% load static %}
 
 {% block content %}
-<!-- Importar el script de Stripe Elements -->
-<script src="https://js.stripe.com/v3/"></script>
+    <!-- Importar el script de Stripe Elements -->
+    <script src="https://js.stripe.com/v3/"></script>
 
-<!-- Mostrar el formulario de Stripe Elements -->
-<form id="payment-form" method="POST">
-    {% csrf_token %}
-    <div id="card-element">
+    <form id="payment-form" method="POST">
+        {% csrf_token %}
         <!-- Stripe Elements creará el campo de entrada de la tarjeta de crédito aquí -->
-    </div>
-    <div id="card-errors" role="alert"></div>  <!-- Agregado el elemento para mostrar los errores -->
-    <button id="submit-button" type="submit">Pagar</button>
-</form>
+        <div id="card-element"></div>
+        <div id="card-errors" role="alert"></div>  <!-- Agregado el elemento para mostrar los errores -->
 
-<!-- Código JavaScript para inicializar y manejar el formulario -->
-<script>
-    // Configurar la clave pública de Stripe
-    const stripe = Stripe('pk_test_51NPHNtFeXmeWsaZvw6oiK3eHO5ee2C5f2rtPVuoQ2hy3aJpGORfibxkRaZI6vTAcaaVH8YtUc5l6A18q8BrasiNO00KV24TS93');
+        <label for="amount">Monto:</label>
+        <input type="number" id="amount" name="amount" step="0.01" required>
 
-    // Crear el elemento card de Stripe Elements
-    const elements = stripe.elements();
-    const cardElement = elements.create('card');
+        <button id="submit-button" type="submit">Pagar</button>
+    </form>
+      
+    <!-- Código JavaScript para inicializar y manejar el formulario -->
+    <script>
+        // Configurar la clave pública de Stripe
+        const stripe = Stripe('pk_test_51NPHNtFeXmeWsaZvw6oiK3eHO5ee2C5f2rtPVuoQ2hy3aJpGORfibxkRaZI6vTAcaaVH8YtUc5l6A18q8BrasiNO00KV24TS93');
 
-    // Montar el elemento card en el campo de entrada de la tarjeta de crédito
-    cardElement.mount('#card-element');
+        // Crear el elemento card de Stripe Elements
+        const elements = stripe.elements();
+        const cardElement = elements.create('card');
 
-    // Manejar el envío del formulario
-    const form = document.getElementById('payment-form');
-    const submitButton = document.getElementById('submit-button');
+        // Montar el elemento card en el campo de entrada de la tarjeta de crédito
+        cardElement.mount('#card-element');
 
-    form.addEventListener('submit', async (event) => {
-        event.preventDefault();
+        // Manejar el envío del formulario
+        const form = document.getElementById('payment-form');
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
 
-        // Deshabilitar el botón de envío mientras se procesa la solicitud
-        submitButton.disabled = true;
+            // Deshabilitar el botón de envío mientras se procesa la solicitud
+            document.getElementById('submit-button').disabled = true;
 
-        // Crear el token de Stripe utilizando los datos de la tarjeta de crédito
-        const { token, error } = await stripe.createToken(cardElement);
+            // Crear el token de Stripe utilizando los datos de la tarjeta de crédito
+            const { token, error } = await stripe.createToken(cardElement);
 
-        if (error) {
-            // Mostrar el mensaje de error al usuario
-            const errorElement = document.getElementById('card-errors');
-            errorElement.textContent = error.message;
-
-            // Habilitar nuevamente el botón de envío
-            submitButton.disabled = false;
-        } else {
-            // Enviar el token de Stripe al servidor para procesar el pago
-            const response = await fetch('/recharge/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': '{{ csrf_token }}', // Asegúrate de incluir el token CSRF en la solicitud POST
-                },
-                body: JSON.stringify({ token: token.id }),
-            });
-
-            if (response.ok) {
-                // El pago se procesó correctamente
-                // Redirigir o mostrar un mensaje de éxito al usuario
-            } else {
-                // Hubo un error al procesar el pago
-                // Mostrar un mensaje de error al usuario
-                const errorData = await response.json();
+            if (error) {
+                // Mostrar el mensaje de error al usuario
                 const errorElement = document.getElementById('card-errors');
-                errorElement.textContent = errorData.error_message;
+                errorElement.textContent = error.message;
 
                 // Habilitar nuevamente el botón de envío
-                submitButton.disabled = false;
+                document.getElementById('submit-button').disabled = false;
+            } else {
+                // Agregar el token y el monto al formulario antes de enviarlo al servidor
+                const hiddenInputToken = document.createElement('input');
+                hiddenInputToken.setAttribute('type', 'hidden');
+                hiddenInputToken.setAttribute('name', 'stripeToken');
+                hiddenInputToken.setAttribute('value', token.id);
+                form.appendChild(hiddenInputToken);
+
+                const hiddenInputAmount = document.createElement('input');
+                hiddenInputAmount.setAttribute('type', 'hidden');
+                hiddenInputAmount.setAttribute('name', 'amount');
+                hiddenInputAmount.setAttribute('value', document.getElementById('amount').value);
+                form.appendChild(hiddenInputAmount);
+
+                // Enviar el formulario al servidor para procesar la recarga
+                form.submit();
             }
-        }
-    });
-</script>
+        });
+    </script>
 {% endblock %}
