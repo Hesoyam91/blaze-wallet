@@ -1,5 +1,5 @@
 from itertools import chain
-from django.http import JsonResponse
+from django.http import HttpResponse, HttpResponseNotAllowed, JsonResponse
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.views import View
@@ -10,6 +10,33 @@ from django.contrib.auth.decorators import login_required
 from .models import PerfilUsuario, Transferencia, Transaccion, TransferenciaBeatpay
 from django.conf import settings
 from django.template import RequestContext
+import stripe
+
+
+
+def recharge(request):
+    if request.method == 'POST':
+        token = request.POST.get('stripeToken')
+        if token:
+            # Aquí realizas el proceso de recarga exitoso
+            try:
+                # Proceso exitoso de recarga
+                return render(request, 'success.html')
+            except stripe.error.CardError as e:
+                error_message = e.error.message
+                return render(request, 'error.html', {'error_message': error_message})
+            except Exception as e:
+                # Otro tipo de error
+                error_message = str(e)
+                return render(request, 'error.html', {'error_message': error_message})
+        else:
+            error_message = 'No se proporcionó un token de Stripe.'
+            return render(request, 'error.html', {'error_message': error_message})
+    else:
+        return render(request, 'recharge.html')
+
+
+
 
 @login_required(login_url='/login/')
 def beatpay(request):
@@ -70,9 +97,6 @@ def beatpay(request):
             messages.error(request, 'Saldo insuficiente para realizar la transferencia.')
 
     return render(request, 'beatpay.html', {'response_data': response_data, 'tarjeta_origen': tarjeta_origen})
-
-
-
 
 
 def handler404(request, *args, **argv):

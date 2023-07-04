@@ -20,7 +20,8 @@ urlpatterns = [
     path('cuenta/', views.cuenta, name="cuenta"),
     path('transferencia/', transferencia_saldo, name='transferencia_saldo'),
     path('beatpay/', views.beatpay, name="beatpay"),
-    path('return/', views.returnn, name="return")
+    path('return/', views.returnn, name="return"),
+    path('recharge/', views.recharge, name="recharge"),
     ]
 
 handler404 = views.handler404

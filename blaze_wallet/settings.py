@@ -143,6 +143,7 @@ CSRF_COOKIE_SAMESITE = 'Lax'
 
 MESSAGE_STORAGE = 'django.contrib.messages.storage.session.SessionStorage'
 
+STRIPE_SECRET_KEY = 'sk_test_51NPHNtFeXmeWsaZvWbVXkJWKy7VqaB9h6wrmxVBoJDzRUvbc0rrtExUowwqomDVLPgaC5ThdkV2SSw72TaUYYlOR00Og6uoWFn'
 
 
 
