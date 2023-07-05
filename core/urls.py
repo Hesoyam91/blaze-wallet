@@ -23,6 +23,7 @@ urlpatterns = [
     path('return/', views.returnn, name="return"),
     path('recharge/', views.recharge, name="recharge"),
     path('success/', views.success, name="success"),
+    path('api/v1/transferencia', views.vista_api, name='transferencia-api'),
     ]
 
 handler404 = views.handler404

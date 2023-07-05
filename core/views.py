@@ -14,6 +14,33 @@ import stripe
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
+
+def vista_api(request):
+    if request.method == 'POST':
+        # Accede a los datos JSON enviados en la solicitud
+        datos = request.POST.get('datos')  # Ejemplo: {"banco_origen": "BEATPAY", "tarjeta_origen": "1234567890", "tarjeta_destino": "0987654321", "monto": 100, "comentario": ""}
+
+        print(datos)
+        # Procesa los datos según tus necesidades
+        banco_origen = datos.get('banco_origen')
+        tarjeta_origen = datos.get('tarjeta_origen')
+        tarjeta_destino = datos.get('tarjeta_destino')
+        monto = datos.get('monto')
+        comentario = datos.get('comentario', '')
+
+        # Realiza las operaciones necesarias con los datos recibidos
+        # ...
+
+        # Retorna una respuesta JSON
+        response_data = {
+            "status": "success",
+            "code": "201"
+        }
+        return JsonResponse(response_data, status=200)
+
+    # Retorna una respuesta de error para otros métodos de solicitud
+    return JsonResponse({'error': 'Método no permitido'}, status=405)
+
 @login_required(login_url='/login/')
 def recharge(request):
     if request.method == 'POST':
