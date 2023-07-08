@@ -62,11 +62,17 @@
                 {% for transferencia in transferencias_recibidas %}
                 <tr>
                   <td>{{ transferencia.fecha }}</td>
-                  <td>{{ transferencia.remitente }}</td>
+                  <td>
+                    {% if transferencia.remitente %}
+                      {{ transferencia.remitente }}
+                    {% else %}
+                      {{ transferencia.remitente_str }}
+                    {% endif %}
+                  </td>
                   <td>${{ transferencia.monto }}</td>
                 </tr>
                 {% endfor %}
-              </tbody>
+              </tbody>              
             </table>
           </div>
         </div>

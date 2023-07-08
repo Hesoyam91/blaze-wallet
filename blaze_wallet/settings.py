@@ -41,6 +41,8 @@ INSTALLED_APPS = [
     'blaze_wallet',
     'core',
     'corsheaders',
+    'rest_framework',
+    'drf_yasg',
 ]
 
 MIDDLEWARE = [
@@ -61,7 +63,8 @@ ROOT_URLCONF = 'blaze_wallet.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'core', 'templates',)],
+        'DIRS': [os.path.join(BASE_DIR, 'core', 'templates',),
+                os.path.join(BASE_DIR, 'core', 'templates', 'swagger'),],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

@@ -11,16 +11,35 @@ from .models import PerfilUsuario, Transferencia, Transaccion, TransferenciaBeat
 from django.conf import settings
 from django.template import RequestContext
 import stripe
-
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
+from rest_framework.decorators import api_view, schema
+from rest_framework.response import Response
+from rest_framework.schemas import ManualSchema
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
-
+@swagger_auto_schema(
+    method='POST',
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'banco_origen': openapi.Schema(type=openapi.TYPE_STRING),
+            'tarjeta_origen': openapi.Schema(type=openapi.TYPE_STRING),
+            'tarjeta_destino': openapi.Schema(type=openapi.TYPE_STRING),
+            'monto': openapi.Schema(type=openapi.TYPE_INTEGER),
+            'comentario': openapi.Schema(type=openapi.TYPE_STRING),
+        },
+        required=['banco_origen', 'tarjeta_origen', 'tarjeta_destino', 'monto'],
+    ),
+    responses={
+        200: openapi.Response(description='Transferencia exitosa.'),
+        405: openapi.Response(description='Método no permitido.'),
+    }
+)
+@api_view(['POST'])
 def vista_api(request):
     if request.method == 'POST':
-        # Accede a los datos JSON enviados en la solicitud
-        datos = request.POST.get('datos')  # Ejemplo: {"banco_origen": "BEATPAY", "tarjeta_origen": "1234567890", "tarjeta_destino": "0987654321", "monto": 100, "comentario": ""}
-
-        print(datos)
+        datos = request.data
         # Procesa los datos según tus necesidades
         banco_origen = datos.get('banco_origen')
         tarjeta_origen = datos.get('tarjeta_origen')
@@ -28,18 +47,35 @@ def vista_api(request):
         monto = datos.get('monto')
         comentario = datos.get('comentario', '')
 
-        # Realiza las operaciones necesarias con los datos recibidos
-        # ...
+        try:
+            perfil_destino = PerfilUsuario.objects.get(usuario__username=tarjeta_destino)
+            perfil_destino.saldo += monto
+            perfil_destino.save()
 
-        # Retorna una respuesta JSON
+            transferencia_beatpay = TransferenciaBeatpay.objects.create(
+                destinatario=tarjeta_destino,
+                remitente_str=tarjeta_origen,
+                monto=monto,
+                comentario=comentario
+                )
+            
+        except PerfilUsuario.DoesNotExist:
+            return Response({'error': 'La tarjeta de destino no existe'}, status=400)
+
+
         response_data = {
             "status": "success",
             "code": "201"
         }
-        return JsonResponse(response_data, status=200)
 
-    # Retorna una respuesta de error para otros métodos de solicitud
-    return JsonResponse({'error': 'Método no permitido'}, status=405)
+        return Response(response_data, status=200)
+
+    return Response({'error': 'Método no permitido'}, status=405)
+
+
+
+
+
 
 @login_required(login_url='/login/')
 def recharge(request):
@@ -302,9 +338,15 @@ def cuenta(request):
             reverse=True
         )[:5]
         transferencias_recibidas = Transferencia.objects.filter(destinatario=perfil_usuario_actual).order_by('-fecha')[:5]
+        transferencias_recibidas_beatpay = TransferenciaBeatpay.objects.filter(destinatario=perfil_usuario_actual).order_by('-fecha')[:5]
+        all_transferencias_recibidas = sorted(
+            chain(transferencias_recibidas, transferencias_recibidas_beatpay),
+            key=lambda transferencia: transferencia.fecha,
+            reverse=True
+        )[:5]
     except PerfilUsuario.DoesNotExist:
         saldo_actual = 0
         transferencias_enviadas = []
         transferencias_recibidas = []
 
-    return render(request, 'cuenta.html', {'saldo_actual': saldo_actual, 'transferencias_enviadas': all_transferencias_enviadas, 'transferencias_recibidas': transferencias_recibidas})
+    return render(request, 'cuenta.html', {'saldo_actual': saldo_actual, 'transferencias_enviadas': all_transferencias_enviadas, 'transferencias_recibidas': all_transferencias_recibidas})
