@@ -18,6 +18,7 @@ from rest_framework.response import Response
 from rest_framework.schemas import ManualSchema
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
+
 @swagger_auto_schema(
     method='POST',
     request_body=openapi.Schema(
@@ -73,10 +74,6 @@ def vista_api(request):
     return Response({'error': 'Método no permitido'}, status=405)
 
 
-
-
-
-
 @login_required(login_url='/login/')
 def recharge(request):
     if request.method == 'POST':
@@ -119,10 +116,6 @@ def recharge(request):
     else:
         return render(request, 'recharge.html')
 
-
-
-def success(request):
-    return render(request, 'success.html')
 
 @login_required(login_url='/login/')
 def beatpay(request):
@@ -176,7 +169,8 @@ def beatpay(request):
                         messages.error(request, response_data['response']['message'])
                     else:
                         messages.error(request, 'Ocurrió un error en la transferencia.')
-                return render(request, 'beatpay.html', {'response_data': response_data})
+                    response_data['saldo'] = tarjeta_origen.saldo  # Agregar el saldo actual a response_data
+                    return render(request, 'beatpay.html', {'response_data': response_data, 'tarjeta_origen': tarjeta_origen})
             else:
                 messages.error(request, 'Código o Token incorrecto.')
         else:
@@ -191,6 +185,9 @@ def handler404(request, *args, **argv):
     response.status_code = 404
     return response
     
+def success(request):
+    return render(request, 'success.html')
+
 def returnn(request):
     return render(request, "return.html")
 

@@ -20,10 +20,10 @@
 
 
   <div class="d-grid gap-2 col-6 mx-auto">
-
+    <br>
+    <p><strong>Saldo actual: ${{ tarjeta_origen.saldo }}</strong></p>
     <form method="post" class="form-floating">
-      <br>
-      <p><strong>Saldo actual: ${{ tarjeta_origen.saldo }}</strong></p>
+      
 
       {% csrf_token %}
       <div class="my-4">
