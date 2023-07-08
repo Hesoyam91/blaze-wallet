@@ -40,6 +40,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'blaze_wallet',
     'core',
+    'corsheaders',
+    'rest_framework',
+    'drf_yasg',
 ]
 
 MIDDLEWARE = [
@@ -50,14 +53,18 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware'
 ]
+
+CORS_ORIGIN_ALLOW_ALL = True
 
 ROOT_URLCONF = 'blaze_wallet.urls'
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'core', 'templates',)],
+        'DIRS': [os.path.join(BASE_DIR, 'core', 'templates',),
+                os.path.join(BASE_DIR, 'core', 'templates', 'swagger'),],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -139,10 +146,11 @@ CSRF_COOKIE_SECURE = False
 # Set SameSite attribute of CSRF cookie
 CSRF_COOKIE_SAMESITE = 'Lax'
 
-CSRF_TRUSTED_ORIGINS = ['https://blaze-wallet.azurewebsites.net','127.0.0.1', 'localhost']
+CSRF_TRUSTED_ORIGINS = ['https://blaze-wallet.azurewebsites.net']
 
 MESSAGE_STORAGE = 'django.contrib.messages.storage.session.SessionStorage'
 
+STRIPE_SECRET_KEY = 'sk_test_51NPHNtFeXmeWsaZvWbVXkJWKy7VqaB9h6wrmxVBoJDzRUvbc0rrtExUowwqomDVLPgaC5ThdkV2SSw72TaUYYlOR00Og6uoWFn'
 
 
 

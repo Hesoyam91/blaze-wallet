@@ -30,10 +30,24 @@ class Transaccion(models.Model):
 
 class TransferenciaBeatpay(models.Model):
     destinatario = models.CharField(max_length=255)
-    remitente = models.ForeignKey(PerfilUsuario, on_delete=models.CASCADE, related_name='transferencias_enviadas_beatpay')
+    remitente = models.ForeignKey(
+        PerfilUsuario,
+        on_delete=models.CASCADE,
+        related_name='transferencias_enviadas_beatpay',
+        null=True,
+        blank=True
+    )
+    remitente_str = models.CharField(max_length=255, blank=True) 
     monto = models.IntegerField()
     comentario = models.TextField(blank=True)
     fecha = models.DateTimeField(auto_now_add=True)
 
+    def save(self, *args, **kwargs):
+        if self.remitente:
+            self.remitente_str = self.remitente.usuario.username
+        super().save(*args, **kwargs)
+
     def __str__(self):
-        return f"Transferencia Beatpay de {self.remitente.usuario.username} a {self.destinatario}"
+        if self.remitente:
+            return f"Transferencia Beatpay de {self.remitente.usuario.username} a {self.destinatario}"
+        return f"Transferencia Beatpay de {self.remitente_str} a {self.destinatario}"

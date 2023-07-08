@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<script src="https://js.stripe.com/v3/"></script>
+
+
+
+<div class="container mt-5">
+    <div class="align-items-center text-center">
+        <h2 class="text-center"><strong>Recarga de saldo</strong></h2>
+    </div>
+    
+    {% if error %}
+    <p class="error">{{ error }}</p>
+    {% endif %}
+    
+    {% if messages %}
+    <div class="alert alert-danger mt-4 rounded col-6 mx-auto">
+      <ul>
+        {% for message in messages %}
+        <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    <div class="alert alert-danger mt-4 rounded col-6 mx-auto" id="card-errors" role="alert">
+    </div>
+
+
+    <div class="d-grid gap-2 col-6 mx-auto">
+        <form id="payment-form" method="POST" class="form-floating">
+            {% csrf_token %}
+
+            <label for="amount" class="my-4"><strong>Monto (mínimo $1000):</strong></label>
+            <input type="number" id="amount" name="amount" required class="form-control"
+                placeholder="Ingrese el monto a recargar">
+            <!-- Stripe Elements creará el campo de entrada de la tarjeta de crédito aquí -->
+            <div id="card-element" class="my-4"></div>
+
+            <!-- Agregado el elemento para mostrar los errores -->
+
+
+            <div class="my-5">
+                <button id="submit-button" type="submit" class="btn btn-gradient btn-rounded"
+                    style="width: 100%;">Pagar</button>
+            </div>
+        </form>
+    </div>
+</div>
+<!-- Código JavaScript para inicializar y manejar el formulario -->
+<script>
+    // Configurar la clave pública de Stripe
+    const stripe = Stripe('pk_test_51NPHNtFeXmeWsaZvw6oiK3eHO5ee2C5f2rtPVuoQ2hy3aJpGORfibxkRaZI6vTAcaaVH8YtUc5l6A18q8BrasiNO00KV24TS93');
+
+    // Crear el elemento card de Stripe Elements
+    document.getElementById('card-errors').style.display = 'none';
+    const elements = stripe.elements();
+    const cardElement = elements.create('card', { hidePostalCode: true });
+
+    // Montar el elemento card en el campo de entrada de la tarjeta de crédito
+    cardElement.mount('#card-element');
+
+    // Manejar el envío del formulario
+    const form = document.getElementById('payment-form');
+    form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        // Deshabilitar el botón de envío mientras se procesa la solicitud
+        document.getElementById('submit-button').disabled = true;
+
+        // Crear el token de Stripe utilizando los datos de la tarjeta de crédito
+        const { token, error } = await stripe.createToken(cardElement);
+
+        if (error) {
+            // Mostrar el mensaje de error al usuario
+            document.getElementById('card-errors').style.display = 'block';
+            const errorElement = document.getElementById('card-errors');
+            errorElement.textContent = error.message;
+
+            // Habilitar nuevamente el botón de envío
+            document.getElementById('submit-button').disabled = false;
+        } else {
+            // Agregar el token y el monto al formulario antes de enviarlo al servidor
+            const hiddenInputToken = document.createElement('input');
+            hiddenInputToken.setAttribute('type', 'hidden');
+            hiddenInputToken.setAttribute('name', 'stripeToken');
+            hiddenInputToken.setAttribute('value', token.id);
+            form.appendChild(hiddenInputToken);
+
+            const hiddenInputAmount = document.createElement('input');
+            hiddenInputAmount.setAttribute('type', 'hidden');
+            hiddenInputAmount.setAttribute('name', 'amount');
+            hiddenInputAmount.setAttribute('value', document.getElementById('amount').value);
+            form.appendChild(hiddenInputAmount);
+
+            // Enviar el formulario al servidor para procesar la recarga
+            form.submit();
+        }
+    });
+</script>
+{% endblock %}

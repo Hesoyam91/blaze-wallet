@@ -1,5 +1,5 @@
 from itertools import chain
-from django.http import JsonResponse
+from django.http import HttpResponse, HttpResponseNotAllowed, JsonResponse
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.views import View
@@ -10,6 +10,112 @@ from django.contrib.auth.decorators import login_required
 from .models import PerfilUsuario, Transferencia, Transaccion, TransferenciaBeatpay
 from django.conf import settings
 from django.template import RequestContext
+import stripe
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
+from rest_framework.decorators import api_view, schema
+from rest_framework.response import Response
+from rest_framework.schemas import ManualSchema
+stripe.api_key = settings.STRIPE_SECRET_KEY
+
+
+@swagger_auto_schema(
+    method='POST',
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'banco_origen': openapi.Schema(type=openapi.TYPE_STRING),
+            'tarjeta_origen': openapi.Schema(type=openapi.TYPE_STRING),
+            'tarjeta_destino': openapi.Schema(type=openapi.TYPE_STRING),
+            'monto': openapi.Schema(type=openapi.TYPE_INTEGER),
+            'comentario': openapi.Schema(type=openapi.TYPE_STRING),
+        },
+        required=['banco_origen', 'tarjeta_origen', 'tarjeta_destino', 'monto'],
+    ),
+    responses={
+        200: openapi.Response(description='Transferencia exitosa.'),
+        405: openapi.Response(description='Método no permitido.'),
+    }
+)
+@api_view(['POST'])
+def vista_api(request):
+    if request.method == 'POST':
+        datos = request.data
+        # Procesa los datos según tus necesidades
+        banco_origen = datos.get('banco_origen')
+        tarjeta_origen = datos.get('tarjeta_origen')
+        tarjeta_destino = datos.get('tarjeta_destino')
+        monto = datos.get('monto')
+        comentario = datos.get('comentario', '')
+
+        try:
+            perfil_destino = PerfilUsuario.objects.get(usuario__username=tarjeta_destino)
+            perfil_destino.saldo += monto
+            perfil_destino.save()
+
+            transferencia_beatpay = TransferenciaBeatpay.objects.create(
+                destinatario=tarjeta_destino,
+                remitente_str=tarjeta_origen,
+                monto=monto,
+                comentario=comentario
+                )
+            
+        except PerfilUsuario.DoesNotExist:
+            return Response({'error': 'La tarjeta de destino no existe'}, status=400)
+
+
+        response_data = {
+            "status": "success",
+            "code": "201"
+        }
+
+        return Response(response_data, status=200)
+
+    return Response({'error': 'Método no permitido'}, status=405)
+
+
+@login_required(login_url='/login/')
+def recharge(request):
+    if request.method == 'POST':
+        token = request.POST.get('stripeToken')
+        amount_clp = request.POST.get('amount')
+        usuario = request.user
+        actual_user = PerfilUsuario.objects.get(usuario=usuario)
+
+        if token and int(amount_clp) >= 1000:
+            # Convertir el monto de CLP a USD
+            amount_usd = int(amount_clp) / 800
+
+            try:
+                # Crear la transferencia en Stripe utilizando el monto en USD
+                transfer = stripe.Charge.create(
+                    amount=int(amount_usd * 100),  # Convertir el monto a centavos
+                    currency='usd',  # Utilizar la moneda deseada (USD)
+                    source=token
+                )
+
+                actual_user.saldo += int(amount_clp)
+                actual_user.save()
+                # Proceso exitoso de transferencia
+                return render(request, 'success.html')
+                
+            
+            except stripe.error.CardError as e:
+                error_message = e.error.message
+                return render(request, 'error.html', {'error_message': error_message})
+            
+            except Exception as e:
+                # Otro tipo de error
+                error_message = str(e)
+                return redirect('recharge')
+
+        else:
+            messages.error(request, 'Monto es menor a $1000.')
+            return redirect('recharge')
+    
+    else:
+        return render(request, 'recharge.html')
+
 
 @login_required(login_url='/login/')
 def beatpay(request):
@@ -63,7 +169,8 @@ def beatpay(request):
                         messages.error(request, response_data['response']['message'])
                     else:
                         messages.error(request, 'Ocurrió un error en la transferencia.')
-                return render(request, 'beatpay.html', {'response_data': response_data})
+                    response_data['saldo'] = tarjeta_origen.saldo  # Agregar el saldo actual a response_data
+                    return render(request, 'beatpay.html', {'response_data': response_data, 'tarjeta_origen': tarjeta_origen})
             else:
                 messages.error(request, 'Código o Token incorrecto.')
         else:
@@ -72,15 +179,15 @@ def beatpay(request):
     return render(request, 'beatpay.html', {'response_data': response_data, 'tarjeta_origen': tarjeta_origen})
 
 
-
-
-
 def handler404(request, *args, **argv):
     response = render('404.html', {},
                                   context_instance=RequestContext(request))
     response.status_code = 404
     return response
     
+def success(request):
+    return render(request, 'success.html')
+
 def returnn(request):
     return render(request, "return.html")
 
@@ -228,9 +335,15 @@ def cuenta(request):
             reverse=True
         )[:5]
         transferencias_recibidas = Transferencia.objects.filter(destinatario=perfil_usuario_actual).order_by('-fecha')[:5]
+        transferencias_recibidas_beatpay = TransferenciaBeatpay.objects.filter(destinatario=perfil_usuario_actual).order_by('-fecha')[:5]
+        all_transferencias_recibidas = sorted(
+            chain(transferencias_recibidas, transferencias_recibidas_beatpay),
+            key=lambda transferencia: transferencia.fecha,
+            reverse=True
+        )[:5]
     except PerfilUsuario.DoesNotExist:
         saldo_actual = 0
         transferencias_enviadas = []
         transferencias_recibidas = []
 
-    return render(request, 'cuenta.html', {'saldo_actual': saldo_actual, 'transferencias_enviadas': all_transferencias_enviadas, 'transferencias_recibidas': transferencias_recibidas})
+    return render(request, 'cuenta.html', {'saldo_actual': saldo_actual, 'transferencias_enviadas': all_transferencias_enviadas, 'transferencias_recibidas': all_transferencias_recibidas})
